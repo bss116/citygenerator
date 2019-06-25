@@ -1,5 +1,6 @@
 # Urban landscape generator
+Procedural generation of randomised urban layouts. 
 
-Procedural generation of randomised urban layouts.
+<img src="/examples/ULG.png" align=”left” width="200"> 
 
-<img src="https://github.com/bss116/citygenerator/blob/master/examples/ULG.png" width="250">
+More details to be here soon.
