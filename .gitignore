@@ -1,3 +1,6 @@
+# Folder with example gifs and videos
+examples/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
