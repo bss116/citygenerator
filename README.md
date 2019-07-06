@@ -1,5 +1,5 @@
-<img src="/examples/ULG.png" align="left" width="200"> 
  # Urban landscape generator
+<img src="/examples/ULG.png" align="left" width="200"> 
 Procedural generation of randomised urban layouts. 
 
 The urban landscape generator is a procedural algorithm that builds fractal like street networks based on urban morpholgy parameters.
