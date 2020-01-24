@@ -2,10 +2,10 @@ import random
 import math
 import copy
 import numpy as np
-from citygenerator import utils
-from citygenerator import heights
-from citygenerator import randomiser
-from citygenerator import greenery
+from . import utils
+from . import heights
+from . import randomiser
+from . import greenery
 
 
 def streetwidth(n, randomness=0, layout="s", delta=1):
@@ -49,7 +49,7 @@ def streetwidth(n, randomness=0, layout="s", delta=1):
     
     # get a set of widths that are conform with the resolution
     interval = np.arange(widths[0], widths[1] + delta, delta)
-    width = randomiser.mid(interval, randomness)
+    width = randomiser.draw_from_interval(interval, randomness, weight='mid')
 
     return width
 
@@ -108,7 +108,7 @@ def intersection(corners, width, randomness=0., minwidth=10, delta=1):
     highcorner = corners[1] - minwidth - math.ceil(width/delta/2)*delta
     # get a set of widths that are conform with the resolution
     interval = np.arange(lowcorner, highcorner + delta, delta)
-    intersec = randomiser.mid(interval, randomness)
+    intersec = randomiser.draw_from_interval(interval, randomness, weight='mid')
 
     return intersec
 

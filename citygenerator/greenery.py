@@ -1,4 +1,4 @@
-from citygenerator import utils
+from . import utils
 
 
 def convert(blocks, target):

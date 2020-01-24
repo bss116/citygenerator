@@ -1,8 +1,8 @@
 import random
 import numpy as np
 import copy
-from citygenerator import utils
-from citygenerator import randomiser
+from . import utils
+from . import randomiser
 
 
 def uniform(blocks, height):
@@ -66,7 +66,7 @@ def generate(blocks, target, randomness=0., maxheight=50, minvolume=None, delta=
             # if block has not reached maximum height
             if cap > 1:
                 interval = np.arange(delta, cap + delta, delta)
-                blocks3d[j][5] += randomiser.low(interval, randomness)
+                blocks3d[j][5] += randomiser.draw_from_interval(interval, randomness, weight='low')
             hblocks = utils.blockfront(blocks3d)
             
             # to save intermediate layouts
