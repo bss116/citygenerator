@@ -1,6 +1,5 @@
 import numpy as np
 import math
-import itertools
 import datetime
 import time
 import os
@@ -20,33 +19,17 @@ def vertices(blocks):
         x = block[0:2]
         y = block[2:4]
         z = block[4:6]
-        vertices.append(list(itertools.product(x, y, z)))
+        verts = [[x[0], y[0], z[0]], 
+                [x[0], y[0], z[1]],
+                [x[0], y[1], z[0]],
+                [x[0], y[1], z[1]], 
+                [x[1], y[0], z[0]],
+                [x[1], y[0], z[1]],
+                [x[1], y[1], z[0]], 
+                [x[1], y[1], z[1]]]
+        vertices.append(verts)
 
     return vertices
-
-
-def edges(blocks):
-
-    edges = []
-    for block in blocks:
-        ed = []
-        xlen = block[1] - block[0]
-        ylen = block[3] - block[2]
-        zlen = block[5] - block[4]
-        verts = vertices([block])
-        for s, e in itertools.combinations(np.array(verts[0]), 2):
-            if np.sum(np.abs(s - e)) == xlen:
-                edge = list(zip(s, e))
-                ed.append(edge)
-            elif np.sum(np.abs(s - e)) == ylen:
-                edge = list(zip(s, e))
-                ed.append(edge)
-            elif np.sum(np.abs(s - e)) == zlen:
-                edge = list(zip(s, e))
-                ed.append(edge)
-        edges.append(ed)
-
-    return edges
 
 
 def faces(blocks):
@@ -54,13 +37,13 @@ def faces(blocks):
     verts = vertices(blocks)
     faces = []
     for v in verts:
-        fac = [[v[0], v[1], v[3], v[2]],
+        face = [[v[0], v[1], v[3], v[2]],
                [v[2], v[3], v[7], v[6]],
                [v[6], v[7], v[5], v[4]],
                [v[4], v[5], v[1], v[0]],
                [v[1], v[3], v[7], v[5]],
                [v[0], v[2], v[6], v[4]]]
-        faces.append(fac)
+        faces.append(face)
         
     return faces
 
@@ -96,7 +79,7 @@ def show_video(fig):
 # -----------
 # MAIN PLOTTING FUNCTIONS
 
-def layout(blocks, ax=None, limits=None, **kwargs):
+def plot_2dlayout(blocks, ax=None, limits=None, **kwargs):
     # block in blocks has form [xmin, xmax, ymin, ymax, ...]
     # limits are plot limits and has form [xmin, xmax, ymin, ymax]
     
@@ -122,10 +105,10 @@ def layout(blocks, ax=None, limits=None, **kwargs):
     ax.set_ylabel('y')
     ax.set_aspect('equal')
 
-    return ax
+    return
 
 
-def blocks3d(blocks, ax=None, limits=None, **kwargs):
+def plot_3dlayout(blocks, ax=None, limits=None, **kwargs):
     
     if ax is None:
         ax = plt.axes(projection='3d')
@@ -162,4 +145,38 @@ def blocks3d(blocks, ax=None, limits=None, **kwargs):
     
     plt.gca().patch.set_facecolor('none')  # set figure background
 
-    return ax
+    return
+
+
+def video_layout(blockgeneration, greenery=[], fig=None, ax=None, limits=None, show=True, save=False, path="./", **kwargs):
+
+    if fig is None:
+        fig = plt.figure()
+    if ax is None:
+        ax = fig.add_subplot(1, 1, 1)
+
+    # create directory to save plots
+    if save is True:
+        savehere = save_path(path)
+
+    for i, blocks in enumerate(blockgeneration):
+
+        if len(blocks[0]) == 4:  # a block in itblocks is 2D
+            ax.clear()  # clear data from axis
+            plot_2dlayout(blocks, ax=ax, limits=limits[:4], **kwargs)
+
+        elif len(blocks[0]) == 6:  # a block in itblocks is 3D
+            plt.clf()  # clear plot data
+            ax = fig.add_subplot(1, 1, 1, projection='3d')
+            plot_3dlayout(blocks, ax=ax, limits=limits, **kwargs)
+            plot_3dlayout(greenery, ax=ax, facecolor='g', limits=limits)
+            ax.dist=11
+
+        if save is True:
+            save_image(savehere + "ULG", i)  
+        if show is True:
+            show_video(fig)
+
+    plt.show()
+
+    return
