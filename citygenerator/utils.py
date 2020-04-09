@@ -30,84 +30,81 @@ def blockfront(blocks):
     return areas
 
 
-def blockstats(dimblocks, a0=None):
-    blockstatistics = {}
-    precision = 2
+def length(interval):
+    """Calculates the length of a given interval."""
+    l = interval[1] - interval[0]
+    return l
 
+
+def areas(xarray, yarray):
+    """Calculates the areas of two given arrays"""
+    areas = [x * y for x, y in zip(xarray, yarray)]
+    return areas
+
+
+def normed_sum(array, norm):
+    normsum = np.sum(array) / norm
+    return normsum
+
+
+def calculate_blockstats(blocks, a0=None):
+    precision=4
+    
     # number of blocks
-    nblocks = len(dimblocks)
-    blockstatistics['nblocks'] = nblocks
+    nblocks = len(blocks)
 
-    # blocks plan area
-    afinal = blockplan(dimblocks)
-    blockstatistics['blocksarea'] = afinal
+    # block length in z
+    blockheights = [length(b[4:6]) for b in blocks]
+    # block length in y
+    blockwidths = [length(b[2:4]) for b in blocks]
+    # block length in x
+    blocklengths = [length(b[0:2]) for b in blocks]
 
-    # blocks frontal area
-    hfinal = blockfront(dimblocks)
-    blockstatistics['blocksarea_f'] = hfinal
+    # block maximum height
+    heightmax = np.max(blockheights)
+    # block mean height
+    heightmean = np.mean(blockheights)
+    # block height standard deviation
+    heightstd = np.std(blockheights)
 
-    # blockheights
-    blockheights = [b[5] for b in dimblocks]
-    blockstatistics['blockheights'] = blockheights
-
-    # block maximum zmax
-    if blockheights:  # if not empty
-        zmax = np.max(blockheights)
-    else:
-        zmax = 0
-    blockstatistics['zmax'] = round(zmax, precision)
-
-    # block average height unweighted
-    if blockheights:
-        zmean = np.mean(blockheights)
-    else:
-        zmean = 0
-    blockstatistics['zmean'] = round(zmean, precision)
-
-    # blockfronts
-    blockfronts = [blockfront([f]) for f in dimblocks]
-    blockstatistics['blockfronts'] = blockfronts
-
-    # blockplans
-    blockplans = [blockplan([p]) for p in dimblocks]
-    blockstatistics['blockplans'] = blockplans
-
-    # block weighted average height zh
-    if hfinal > 0:
-        # weights from blockfronts
-        weights = [b/hfinal for b in blockfronts]
-        weightedheights = [f * b for f, b in zip(weights, blockheights)]
-        zh = np.sum(weightedheights)
-    else: # sets weighted heights to zero in case of no blocks
-        zh = 0
-    blockstatistics['zh'] = round(zh, precision)
-
-    # block weighted average height zh_alt weighted by block area
-    # not block fronts
-    if afinal > 0:
-        # weights from blockplan areas
-        weights2 = [b/afinal for b in blockplans]
-        weightedheights2 = [f * b for f, b in zip(weights2, blockheights)]
-        zh_alt = np.sum(weightedheights2)
-    else: # sets weighted heights to zero in case of no blocks
-        zh_alt = 0
-    blockstatistics['zh_alt'] = round(zh_alt, precision)
-
-    # if a0 defined
-    try:
+    # block plan areas
+    blockplans = areas(blocklengths, blockwidths)
+    # block frontal areas for wind from x direction
+    blockfronts = areas(blockwidths, blockheights)
+    # block frontal areas for wind from y direction
+    # blocksides = areas(blocklengths, blockheights)
+    
+    # add statistics to dictionary
+    blockstats = {}
+    blockstats['nblocks'] = nblocks
+    blockstats['blockheights'] = blockheights
+    blockstats['blockwidths'] = blockwidths
+    blockstats['blocklengths'] = blocklengths
+    blockstats['heightmax'] = heightmax
+    blockstats['heightmean'] = heightmean
+    blockstats['heightstd'] = heightstd
+    blockstats['blockplans'] = blockplans
+    blockstats['blockfronts'] = blockfronts
+    # blockstats['blocksides'] = blocksides
+    
+    if a0 is not None:
         # building area density
-        lp = afinal / a0
-        blockstatistics['lp'] = round(lp, precision)
-        
+        planindex = normed_sum(blockplans, a0)
         # building frontal aspect ratio
-        lf = hfinal / a0
-        blockstatistics['lf'] = round(lf, precision)
-        
-    except Exception:
-        print("No a0 defined.")
-        pass
-        
-    return blockstatistics
+        frontindex = normed_sum(blockfronts, a0)
+        # add statistics to dictionary
+        blockstats['planindex'] = planindex
+        blockstats['frontindex'] = frontindex        
+    
+    for key, val in blockstats.items():
+        # convert numpy types to generic python types
+        if isinstance(val, np.float32):
+            val = val.item()
+        # round values to precision
+        if isinstance(val, float):
+            blockstats[key] = round(val, precision)
+    
+    return blockstats
 
 
 def blockshift(blocks, limits, xshift, yshift):
