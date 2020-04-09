@@ -8,7 +8,7 @@ from . import randomiser
 from . import greenery
 
 
-def streetwidth(n, randomness=0, layout="s", delta=1):
+def get_streetwidth(n, randomness=0, layout="s", delta=1):
     """ Function that returns a random street width. The width depends on level of iteration.
     :param n: current number of blocks
     :param randomised: whether width is random number in interval or set width
@@ -54,7 +54,7 @@ def streetwidth(n, randomness=0, layout="s", delta=1):
     return width
 
 
-def randomblock(blocks, xwidth, ywidth, order, minwidth=10):
+def choose_randomblock(blocks, xwidth, ywidth, order, minwidth=10):
     n = len(blocks)
 
     if order in ["random", "r"]:
@@ -101,7 +101,7 @@ def randomblock(blocks, xwidth, ywidth, order, minwidth=10):
     return j
 
 
-def intersection(corners, width, randomness=0., minwidth=10, delta=1):
+def get_intersection(corners, width, randomness=0., minwidth=10, delta=1):
     # minwidth is dimensional parameter (in metres)
 
     lowcorner = corners[0] + minwidth + math.floor(width/delta/2)*delta
@@ -113,7 +113,7 @@ def intersection(corners, width, randomness=0., minwidth=10, delta=1):
     return intersec
 
 
-def newcorners(corners, separation, width, delta):
+def create_newcorners(corners, separation, width, delta):
     min1 = corners[0]
     max1 = separation - math.floor(width/delta/2)*delta
     min2 = separation + math.ceil(width/delta/2)*delta
@@ -121,11 +121,11 @@ def newcorners(corners, separation, width, delta):
     return [min1, max1], [min2, max2]
 
 
-def generate(xsize, ysize, zsize, imax, jtot, kmax, 
-             pbuild, pgreen, pfrontal, order="random",
-             layoutrandom=0., heightrandom=0.,
-             margin=4, minwidth=5, minvolume=10,
-             savesteps=False):
+def generate_layout(xsize, ysize, zsize, imax, jtot, kmax, 
+                    pbuild, pgreen, pfrontal, order="random",
+                    layoutrandom=0., heightrandom=0.,
+                    margin=4, minwidth=5, minvolume=10,
+                    savesteps=False):
     # margin, minwidth and minvolume are currently all dimensional parameters,
     # think about this when setting standards!
     
@@ -137,8 +137,8 @@ def generate(xsize, ysize, zsize, imax, jtot, kmax,
     percentage = pbuild + pgreen  # target build-up density
     blocks = []
 
-    xwidth = streetwidth(n=1, randomness=layoutrandom, delta=dx)
-    ywidth = streetwidth(n=1, randomness=layoutrandom, delta=dy)
+    xwidth = get_streetwidth(n=1, randomness=layoutrandom, delta=dx)
+    ywidth = get_streetwidth(n=1, randomness=layoutrandom, delta=dy)
 
     # main intersection in upper right corner
     ablocks = (xsize - xwidth) * (ysize - ywidth)
@@ -157,24 +157,24 @@ def generate(xsize, ysize, zsize, imax, jtot, kmax,
         nbl = len(blocks)  # number of blocks
 
         # pick random street widths
-        xwidth = streetwidth(n=nbl, randomness=layoutrandom, delta=dx)
-        ywidth = streetwidth(n=nbl, randomness=layoutrandom, delta=dy)
+        xwidth = get_streetwidth(n=nbl, randomness=layoutrandom, delta=dx)
+        ywidth = get_streetwidth(n=nbl, randomness=layoutrandom, delta=dy)
         
         # pick block according to defined order. if none, order is random.
-        j = randomblock(blocks=blocks, xwidth=xwidth, ywidth=ywidth, order=order, minwidth=2*minwidth)
+        j = choose_randomblock(blocks=blocks, xwidth=xwidth, ywidth=ywidth, order=order, minwidth=2*minwidth)
         # if no suitable block found, return blocks as they are
         if j is None:
             break
 
         # pick random intersection point
-        xintersection = intersection(corners=blocks[j][0:2], width=xwidth, randomness=layoutrandom, minwidth=minwidth, delta=dx)
-        yintersection = intersection(corners=blocks[j][2:4], width=ywidth, randomness=layoutrandom, minwidth=minwidth, delta=dy)
+        xintersection = get_intersection(corners=blocks[j][0:2], width=xwidth, randomness=layoutrandom, minwidth=minwidth, delta=dx)
+        yintersection = get_intersection(corners=blocks[j][2:4], width=ywidth, randomness=layoutrandom, minwidth=minwidth, delta=dy)
             
         # create new block coordinates
         # takes [xmin xmax] of block j
-        x1, x2 = newcorners(corners=blocks[j][0:2], separation=xintersection, width=xwidth, delta=dx)
+        x1, x2 = create_newcorners(corners=blocks[j][0:2], separation=xintersection, width=xwidth, delta=dx)
         # takes [ymin ymax] of block j
-        y1, y2 = newcorners(corners=blocks[j][2:4], separation=yintersection, width=ywidth, delta=dy)
+        y1, y2 = create_newcorners(corners=blocks[j][2:4], separation=yintersection, width=ywidth, delta=dy)
 
         # put together 4 new blocks and add block area to list
         newblock1 = [*x1, *y1]  # for python<3.5: newblock1 = x1 + y1
@@ -195,13 +195,52 @@ def generate(xsize, ysize, zsize, imax, jtot, kmax,
             generationsteps.append(copy.deepcopy(blocks))
 
     # define blocks that are greenspace
-    tmpblocks, tmpgreen = greenery.convert(blocks=blocks, target=(pgreen * a0))
+    tmpblocks, tmpgreen = greenery.convert_blocks_to_greenery(blocks=blocks, target=(pgreen * a0))
 
     # add heights to blocks and add zero height to greenery
-    blocks3d, heightgenerationsteps = heights.generate(blocks=tmpblocks, target=(pfrontal * a0), randomness=heightrandom, maxheight=round(zsize/6), minvolume=minvolume, delta=dz, savesteps=savesteps)
-    greenspace, greenheights = heights.generate(blocks=tmpgreen, target=0)
+    blocks3d, heightgenerationsteps = heights.generate_heights(blocks=tmpblocks, target=(pfrontal * a0), randomness=heightrandom, maxheight=round(zsize/6), minvolume=minvolume, delta=dz, savesteps=savesteps)
+    greenspace, greenheights = heights.generate_heights(blocks=tmpgreen, target=0)
     
     if savesteps is True:
         generationsteps.extend(copy.deepcopy(heightgenerationsteps))
      
     return blocks3d, greenspace, generationsteps
+
+
+def generate_oneblock(xsize, ysize, lp, lf,
+            margin=8, zmargin=0, exact=False):
+
+    '''Function that generates a single block from the input parameters.
+    Required:
+    :param xsize, ysize:  horizontal domain size.
+    :param lp: building area density.
+    :param lf: frontal aspect ratio.
+    Optional:
+    :param margin: margin at the domain boarder.
+    :param exact: -True for most exact lp
+                -False for approximate area that is closer to a square'''
+    
+    # initialise blocks and block area
+    a0 = xsize * ysize
+    atarget = a0 * lp
+    htarget = a0 * lf
+
+    ytmp = math.floor(math.sqrt(atarget))
+    
+    if exact is True:
+        testrange = range(ytmp)
+    else:
+        testrange = range(round(0.1*xsize))
+        
+    for i in testrange:
+        y = ytmp - i
+        xtmp = atarget/y
+        if xtmp == round(xtmp):
+            break
+    x = round(xtmp)
+    
+    z = round(htarget/y)
+
+    blocks =  [[margin, x+margin, margin, y+margin, zmargin, z+zmargin]]
+
+    return blocks

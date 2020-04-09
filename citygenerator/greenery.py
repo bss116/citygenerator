@@ -1,7 +1,7 @@
 from . import utils
 
 
-def convert(blocks, target):
+def convert_blocks_to_greenery(blocks, target):
     """Function to convert target surface of blocks into green space."""
 
     greenspace = []

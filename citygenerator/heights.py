@@ -25,7 +25,7 @@ def heightlist(blocks, heights):
     return blocks3d
 
 
-def generate(blocks, target, randomness=0., maxheight=50, minvolume=None, delta=1, savesteps=False):
+def generate_heights(blocks, target, randomness=0., maxheight=50, minvolume=None, delta=1, savesteps=False):
     # minvolume is dimensional parameter
     
     generationsteps = []
