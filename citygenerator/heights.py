@@ -1,4 +1,3 @@
-import random
 import numpy as np
 import copy
 from . import utils
