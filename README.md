@@ -1,6 +1,10 @@
  # Urban landscape generator
+ 
 <img src="/examples/ULG.png" align="left" width="200"> 
+
 Procedural generation of randomised urban layouts.
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3747476.svg)](https://doi.org/10.5281/zenodo.3747476)
 
 The urban landscape generator is a procedural algorithm that builds fractal like street networks based on urban morpholgy parameters.
 The algorithm divides building blocks into smaller blocks until a target build-up area density is reached. Building blocks are then given heights to match the target frontal area density. An optional greenery density can be defined. The layouts can be randomised by choosing a level of randomness, which influences the street widths, intersection points and building heights.
