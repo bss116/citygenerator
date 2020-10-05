@@ -37,3 +37,9 @@ python3 examples/random_layout.py
 ```
 
 The jupyter notebook [examples/generate_layouts.ipynb](https://nbviewer.jupyter.org/github/bss116/citygenerator/blob/master/examples/generate_layouts.ipynb) provides an examples on how to generate layouts, display the generation process and save the generated layouts.
+
+## Reference
+
+The Urban Landscape Generator is documented in:
+
+Sützl, B.S., Rooney, G.G. & van Reeuwijk, M. Drag Distribution in Idealized Heterogeneous Urban Environments. Boundary-Layer Meteorol (2020). [https://doi.org/10.1007/s10546-020-00567-0](https://doi.org/10.1007/s10546-020-00567-0) (open access)
